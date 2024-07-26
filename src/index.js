@@ -5,11 +5,9 @@ import {
   GatewayIntentBits,
   Routes,
 } from 'discord.js';
-import { REST } from '@discordjs/rest';
 import { DISCORD_TOKEN } from '../config.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { deployCommands } from './deploy-commands.js';
 
 const client = new Client({
   intents: [
@@ -51,8 +49,6 @@ async function getCommands(dir) {
   }
   return commands;
 }
-
-deployCommands();
 
 client.commands = getCommands('./src/commands');
 

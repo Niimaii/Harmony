@@ -40,7 +40,7 @@ async function loadCommands() {
   return commands;
 }
 
-export async function deployCommands() {
+(async () => {
   const commands = await loadCommands();
   const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
@@ -53,4 +53,4 @@ export async function deployCommands() {
       console.log('Successfully registered the application commands!')
     )
     .catch(console.error);
-}
+})();
