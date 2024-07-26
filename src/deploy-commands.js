@@ -46,9 +46,9 @@ async function loadCommands() {
 
   // Run all the commands in our specific server
   rest
-    .put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID, { body: commands })
-    )
+    .put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+      body: commands,
+    })
     .then(() =>
       console.log('Successfully registered the application commands!')
     )
