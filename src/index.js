@@ -49,27 +49,29 @@ async function getCommands(dir) {
   }
   return commands;
 }
+(async () => {
+  client.commands = await getCommands('./src/commands');
 
-client.commands = getCommands('./src/commands');
+  client.once(Events.ClientReady, (c) => {
+    console.log(`${c.user.tag} logged in`);
+  });
+  client.on(Events.InteractionCreate, async (interaction) => {
+    console.log('Client.on ran');
+    const log = await client.commands;
+    console.log(log);
+    if (!interaction.isChatInputCommand()) return;
 
-client.once(Events.ClientReady, (c) => {
-  console.log(`${c.user.tag} logged in`);
-});
-client.on(Events.InteractionCreate, (interaction) => {
-  console.log('Client.on ran');
+    console.log(`Command received: ${interaction.commandName}`);
 
-  if (!interaction.isChatInputCommand()) return;
+    let command = client.commands.get(interaction.commandName);
 
-  console.log(`Command received: ${interaction.commandName}`);
+    try {
+      if (interaction.replied) return;
+      command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+  });
 
-  let command = client.commands.get(interaction.commandName);
-
-  try {
-    if (interaction.replied) return;
-    command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-client.login(DISCORD_TOKEN);
+  client.login(DISCORD_TOKEN);
+})();
