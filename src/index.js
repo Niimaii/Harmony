@@ -1,77 +1,63 @@
-import {
-  Client,
-  Collection,
-  Events,
-  GatewayIntentBits,
-  Routes,
-} from 'discord.js';
-import { DISCORD_TOKEN } from '../config.js';
-import fs from 'node:fs';
 import path from 'node:path';
+import fs from 'node:fs';
+import { Client, Events, GatewayIntentBits, Collection } from 'discord.js';
+import { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } from '../config.js';
+import { fileURLToPath } from 'node:url';
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
-});
+// Create a new client instance
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Get __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-function getFiles(dir) {
-  const files = fs.readdirSync(dir, {
-    withFileTypes: true,
-  });
+client.commands = new Collection();
 
-  let commandFiles = [];
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
 
-  //   Loop through all the files and folders in the `command` folder
-  for (const file of files) {
-    // If a folder is being looped over, run `getFiles()` recursively so that all the files in that folder is accounted for
-    if (file.isDirectory()) {
-      commandFiles = [...commandFiles, ...getFiles(`${dir}/${file.name}`)];
-    }
-    // If what is being looped over a file that ends with .js, then add the file path to `commandFiles`
-    else if (file.name.endsWith('.js')) {
-      commandFiles.push(`${dir}/${file.name}`);
+async function loadCommands() {
+  for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs
+      .readdirSync(commandsPath)
+      .filter((file) => file.endsWith('.js'));
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = await import(filePath);
+      // Set a new item in the Collection with the key as the command name and the value as the exported module
+      if ('data' in command.default && 'execute' in command.default) {
+        client.commands.set(command.default.data.name, command.default);
+      } else {
+        console.log(
+          `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        );
+      }
     }
   }
-
-  return commandFiles;
 }
 
-async function getCommands(dir) {
-  let commands = new Collection();
-  const commandFiles = getFiles(dir);
-
-  for (const commandFile of commandFiles) {
-    const command = await import(path.resolve(commandFile));
-    commands.set(command.default.data.toJSON().name, command.default);
-  }
-  return commands;
-}
 (async () => {
-  client.commands = await getCommands('./src/commands');
+  await loadCommands();
 
-  client.once(Events.ClientReady, (c) => {
-    console.log(`${c.user.tag} logged in`);
-  });
-  client.on(Events.InteractionCreate, async (interaction) => {
-    console.log('Client.on ran');
-    const log = await client.commands;
-    console.log(log);
-    if (!interaction.isChatInputCommand()) return;
+  const eventsPath = path.join(__dirname, 'events');
+  const eventFiles = fs
+    .readdirSync(eventsPath)
+    .filter((file) => file.endsWith('.js'));
 
-    console.log(`Command received: ${interaction.commandName}`);
-
-    let command = client.commands.get(interaction.commandName);
-
-    try {
-      if (interaction.replied) return;
-      command.execute(interaction);
-    } catch (error) {
-      console.error(error);
+  for (const file of eventFiles) {
+    const filePath = path.join(eventsPath, file);
+    const event = await import(filePath);
+    if (event.default.once) {
+      client.once(event.default.name, (...args) =>
+        event.default.execute(...args)
+      );
+    } else {
+      client.on(event.default.name, (...args) =>
+        event.default.execute(...args)
+      );
     }
-  });
+  }
 
+  // Log in to Discord with your client's token
   client.login(DISCORD_TOKEN);
 })();
