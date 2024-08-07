@@ -1,18 +1,41 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { Client, Events, GatewayIntentBits, Collection } from 'discord.js';
-import { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } from '../config.js';
+import { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } from './config.js';
 import { fileURLToPath } from 'node:url';
+import express from 'express';
+
+// ================================== DATABASE ==================================
+
+const app = express();
+const port = 3001;
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Hello world!');
+});
+
+app.listen(port, () => console.log(`App listening on port ${port}`));
+
+// ================================== DISCORDJS ==================================
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 client.commands = new Collection();
 
-const foldersPath = path.join(__dirname, 'commands');
+const foldersPath = path.join(__dirname, 'discordjs/commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 async function loadCommands() {
@@ -39,7 +62,7 @@ async function loadCommands() {
 (async () => {
   await loadCommands();
 
-  const eventsPath = path.join(__dirname, 'events');
+  const eventsPath = path.join(__dirname, 'discordjs/events');
   const eventFiles = fs
     .readdirSync(eventsPath)
     .filter((file) => file.endsWith('.js'));
