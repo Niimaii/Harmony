@@ -7,30 +7,90 @@ export default {
     .setDescription(
       'Report user (WARNING: False reports will be treated as an offense)'
     )
-    .addUserOption((option) =>
-      option
-        .setName('user')
-        .setDescription('Server users')
-        .setRequired(true)
-    )
-    .addStringOption((option) =>
-      option
-        .setName('offense')
-        .setDescription('Select the offense type')
-        .setRequired(true)
-        .addChoices(
-          { name: 'Spam', value: 'spam' },
-          { name: 'Harassment', value: 'harassment' },
-          { name: 'Hate Speech', value: 'hate_speech' },
-          { name: 'Cheating', value: 'cheating' },
-          { name: 'Other', value: 'other' }
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('text')
+        .setDescription('Report text offense')
+        .addUserOption((option) =>
+          option
+            .setName('user')
+            .setDescription('Server users')
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName('offense')
+            .setDescription('Select the offense type')
+            .setRequired(true)
+            .addChoices(
+              { name: 'Condescension or Bullying: 4.1.c', value: '4.1.c' },
+              { name: 'Doxing: 4.1.d', value: '4.1.d' },
+              { name: 'Discrimination: 4.1.b', value: '4.1.b' },
+              { name: 'NSFW: 4.1.g', value: '4.1.g' },
+              { name: 'Advertisement: 4.1.f', value: '4.1.f' },
+              { name: 'Spam: 4.1.h', value: '4.1.h' },
+              { name: 'No minors (must be 18+): 4.2.a', value: '4.2.a' },
+              { name: 'Bot or duplicate account: 4.2.b', value: '4.2.b' }
+            )
+        )
+        .addStringOption((option) =>
+          option
+            .setName('message_link')
+            .setDescription(
+              'Right click message and select "Copy Message Link"'
+            )
+            .setRequired(true)
         )
     )
-    .addStringOption((option) =>
-      option
-        .setName('description')
-        .setDescription('Describe what happened (optional)')
-        .setRequired(false)
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('voice')
+        .setDescription('Report voice offense')
+        .addUserOption((option) =>
+          option
+            .setName('user')
+            .setDescription('Server users')
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName('offense')
+            .setDescription('Select the offense type')
+            .setRequired(true)
+            .addChoices(
+              { name: 'Condescension or Bullying: 4.1.c', value: '4.1.c' },
+              { name: 'Doxing: 4.1.d', value: '4.1.d' },
+              { name: 'Discrimination: 4.1.b', value: '4.1.b' },
+              { name: 'NSFW: 4.1.g', value: '4.1.g' },
+              { name: 'Advertisement: 4.1.f', value: '4.1.f' },
+              { name: 'Spam: 4.1.h', value: '4.1.h' },
+              { name: 'No minors (must be 18+): 4.2.a', value: '4.2.a' },
+              { name: 'Bot or duplicate account: 4.2.b', value: '4.2.b' }
+            )
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('other')
+        .setDescription(
+          "Report something that isn't either text or voice based"
+        )
+        .addUserOption((option) =>
+          option
+            .setName('user')
+            .setDescription('Server users')
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName('offense')
+            .setDescription('Select the offense type')
+            .setRequired(true)
+            .addChoices(
+              { name: 'No minors (must be 18+): 4.2.a', value: '4.2.a' },
+              { name: 'Bot or duplicate account: 4.2.b', value: '4.2.b' }
+            )
+        )
     ),
 
   /**
