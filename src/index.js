@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { Client, Events, GatewayIntentBits, Collection } from 'discord.js';
 import { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } from './config.js';
 import { fileURLToPath } from 'node:url';
+import authRoutes from './database/routes/authRoutes.js';
 import express from 'express';
 
 // ================================== DATABASE ==================================
@@ -16,6 +17,9 @@ app.get('/', (req, res) => {
   res.send('Hello world!');
 });
 
+app.use('/api/unyfi/auth', authRoutes);
+
+// Initiate the express server
 app.listen(port, () => console.log(`App listening on port ${port}`));
 
 // ================================== DISCORDJS ==================================
